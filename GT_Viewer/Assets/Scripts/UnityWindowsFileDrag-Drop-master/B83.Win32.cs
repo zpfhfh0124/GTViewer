@@ -418,7 +418,7 @@ namespace B83.Win32
         public delegate void DroppedFilesEvent(List<string> aPathNames, POINT aDropPoint);
         public static event DroppedFilesEvent OnDroppedFiles;
 
-#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
+#if UNITY_STANDALONE_WIN && UNITY_EDITOR_WIN
 
         private static uint threadId;
         private static IntPtr mainWindow = IntPtr.Zero;
@@ -481,7 +481,7 @@ namespace B83.Win32
             return WinAPI.CallNextHookEx(m_Hook, code, wParam, ref lParam);
         }
 #else
-        public static void InstallHook()
+        public static void InstallHook()S
         {
         }
         public static void UninstallHook()
