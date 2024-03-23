@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using B83.Win32;
 using UnityEngine.UI;
+using System.IO;
 
 public class FileDragAndDrop : MonoBehaviour
 {
@@ -50,7 +51,7 @@ public class FileDragAndDrop : MonoBehaviour
         List<string> list_img_extension = new List<string>{ "jpg", "jpeg", "png", "gif" };
         if(list_img_extension.Exists(x => x == extension))
         {
-            SetImg(aFiles[0]);
+            SetImg(aFiles[0], isLeft);
             Debug.Log($"드롭된 파일의 확장자가 {extension} 이미지 드롭 성공!");
         }
         else
@@ -61,9 +62,24 @@ public class FileDragAndDrop : MonoBehaviour
         
     }
 
-    void SetImg(string imgFilePath)
+    void SetImg(string imgFilePath, bool isLeft)
     {
+        Image image = isLeft ? _img_left : _img_right;
+        
+        // 리소스 탐색 후 텍스쳐로 변환해서 저장
+        byte[] byteTexture = File.ReadAllBytes(imgFilePath);
+        if(byteTexture.Length > 0)
+        {
+            // 텍스쳐로 저장
+            Texture2D texture = new Texture2D(0, 0);
+            texture.LoadImage(byteTexture);
 
+            // 스프라이트로 변환
+            Rect rect = new Rect(0, 0, texture.width, texture.height);
+            Sprite sprite = Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f));
+            image.sprite = sprite;
+        }
+        
     }
 
     void ResetImg()
