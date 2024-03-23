@@ -11,12 +11,27 @@ public class FileDragAndDrop : MonoBehaviour
     [SerializeField] Image _img_left;
     [SerializeField] Image _img_right;
 
+    // 버튼
+    [SerializeField] Button _btn_reset;
+    [SerializeField] Button _btn_quit;
+
     List<string> log = new List<string>();
     void OnEnable ()
     {
         // must be installed on the main thread to get the right thread id.
         UnityDragAndDropHook.InstallHook();
         UnityDragAndDropHook.OnDroppedFiles += OnFiles;
+
+        // 버튼 리스너 등록
+        _btn_reset.onClick.AddListener(() =>
+        {
+            ResetImg();
+        });
+
+        _btn_quit.onClick.AddListener(() =>
+        {
+            QuitApp();
+        });
     }
     void OnDisable()
     {
@@ -46,8 +61,8 @@ public class FileDragAndDrop : MonoBehaviour
         bool isLeft = (aPos.x <= screenWidth / 2);
 
         // 파일이 이미지 파일인지 검사(jpeg, jpg, png, gif...)
-        bool isImageFile = false;
         string extension = aFiles[0].Split('.').Last();
+        extension = extension.ToLower();
         List<string> list_img_extension = new List<string>{ "jpg", "jpeg", "png", "gif" };
         if(list_img_extension.Exists(x => x == extension))
         {
@@ -84,7 +99,19 @@ public class FileDragAndDrop : MonoBehaviour
 
     void ResetImg()
     {
+        Texture2D default_texture = Resources.Load("album", typeof(Texture2D)) as Texture2D;
+       
+        // 스프라이트로 변환
+        Rect rect = new Rect(0, 0, default_texture.width, default_texture.height);
+        Sprite default_sprite = Sprite.Create(default_texture, rect, new Vector2(0.5f, 0.5f));
+        
+        _img_left.sprite = default_sprite;
+        _img_right.sprite = default_sprite;
+    }
 
+    void QuitApp()
+    {
+        Application.Quit();
     }
 
     private void OnGUI()
