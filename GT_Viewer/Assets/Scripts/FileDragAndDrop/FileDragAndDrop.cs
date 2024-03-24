@@ -24,14 +24,7 @@ public class FileDragAndDrop : MonoBehaviour
 
         yield return new WaitUntil(() => GT.SceneControler.Instance != null);
 
-        if (GT.SceneControler.Instance.CheckDontDestroyObjs(gameObject))
-        {
-            Destroy(gameObject);
-        }
-        else
-        {
-            GT.SceneControler.Instance.AddDontDestroyObj(gameObject);
-        }
+        GT.SceneControler.Instance.AddDontDestroyObj(gameObject);
     }
 
     void OnEnable ()
