@@ -24,9 +24,10 @@ public class FileDragAndDrop : MonoBehaviour
         UnityDragAndDropHook.OnDroppedFiles += OnFiles;
 
         _log_guiStyle = new GUIStyle("label");
-        _log_guiStyle.fontSize = 20;
-        _log_guiStyle.fontStyle = FontStyle.Italic;
-        _log_guiStyle.normal.textColor = Color.cyan;
+        _log_guiStyle.fontSize = 15;
+        _log_guiStyle.fontStyle = FontStyle.Bold;
+        _log_guiStyle.normal.textColor = Color.magenta;
+        _log_guiStyle.normal.background = new Texture2D(Screen.width / 2, Screen.height / 2);
     }
     void OnDisable()
     {
@@ -57,23 +58,8 @@ public class FileDragAndDrop : MonoBehaviour
         int screenWidth = Screen.currentResolution.width;
         bool isLeft = (aPos.x <= screenWidth / 2);
 
-        // 파일이 이미지 파일인지 검사(jpeg, jpg, png, gif...)
-        string filePath = aFiles[0];
-        string extension = filePath.Split('.').Last();
-        extension = extension.ToLower();
-        List<string> list_img_extension = new List<string>{ "jpg", "jpeg", "png", "gif" };
-        if(list_img_extension.Exists(x => x == extension))
-        {
-            Debug.Log($"드롭된 파일의 확장자가 {extension} 이미지 드롭 성공!");
-        }
-        else
-        {
-            Debug.LogWarning($"드롭된 파일의 확장자가 {extension}으로 이미지 파일이 아닙니다.");
-            return;
-        }
-
         // 각 참조하는 이벤트를 호출
-        DropedFileEvent.Invoke(filePath, isLeft);
+        DropedFileEvent.Invoke(aFiles[0], isLeft);
     }
 
     void ReleaseDropFileEvent()
@@ -86,8 +72,12 @@ public class FileDragAndDrop : MonoBehaviour
         if (GUILayout.Button("clear log"))
             _log.Clear();
 
-        foreach (var s in _log)
-
-            GUILayout.Label( s );
+        //GUILayout.BeginArea(new Rect(50, 50, 300, 300));
+        //GUILayout.Box("Log Area");
+            foreach (var s in _log)
+            {
+                GUILayout.Label( s, _log_guiStyle );
+            }
+        //GUILayout.EndArea();
     }
 }

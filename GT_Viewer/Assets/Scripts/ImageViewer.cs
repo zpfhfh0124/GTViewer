@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ImageViewer : MonoBehaviour
@@ -14,6 +16,7 @@ public class ImageViewer : MonoBehaviour
     // 버튼
     [SerializeField] Button _btn_reset;
     [SerializeField] Button _btn_quit;
+    [SerializeField] Button _btn_video;
 
     void Start()
     {
@@ -46,6 +49,20 @@ public class ImageViewer : MonoBehaviour
 
     public void SetImg(string imgFilePath, bool isLeft)
     {
+        // 파일이 이미지 파일인지 검사(jpeg, jpg, png, gif...)
+        string extension = imgFilePath.Split('.').Last();
+        extension = extension.ToLower();
+        List<string> list_img_extension = new List<string> { "jpg", "jpeg", "png", "gif" };
+        if (list_img_extension.Exists(x => x == extension))
+        {
+            Debug.Log($"드롭된 파일의 확장자가 {extension} 이미지 드롭 성공!");
+        }
+        else
+        {
+            Debug.LogWarning($"드롭된 파일의 확장자가 {extension}으로 이미지 파일이 아닙니다.");
+            return;
+        }
+
         Image image = isLeft ? _img_left : _img_right;
 
         // 리소스 탐색 후 텍스쳐로 변환해서 저장
@@ -78,5 +95,10 @@ public class ImageViewer : MonoBehaviour
     void QuitApp()
     {
         Application.Quit();
+    }
+
+    void GoToVideoScene()
+    {
+        //SceneManager.sceneLoaded()
     }
 }
