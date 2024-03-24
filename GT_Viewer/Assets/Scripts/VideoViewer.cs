@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -16,11 +17,21 @@ namespace GT
 
         [SerializeField] Button _btn_ImageViewer;
 
+        [SerializeField] Slider _slider;
+
+        [SerializeField] Text _lengthTime;
+        [SerializeField] Text _currentTime;
+
         void Start()
         {
             _btn_ImageViewer.onClick.AddListener(() =>
             {
                 MainController.Instance.SetMode(ViewMode.IMAGE);
+            });
+
+            _slider.onValueChanged.AddListener((value) =>
+            {
+                SetDuration(value);
             });
 
             Init();
@@ -34,6 +45,22 @@ namespace GT
         private void OnDisable()
         {
             FileDragAndDrop.DropedFileEvent -= SetVideo;
+        }
+
+        void Update()
+        {
+            if (Input.GetKey(KeyCode.Space))
+            {
+                SetPlayPause();
+            }
+            else if (Input.GetKey(KeyCode.UpArrow))
+            {
+                SetVolume(0.1f);
+            }
+            else if (Input.GetKey(KeyCode.DownArrow))
+            {
+                SetVolume(-0.1f);
+            }
         }
 
         public void SetEnable(bool isEnable)
@@ -85,7 +112,73 @@ namespace GT
             
             Debug.Log($"정제된 path - {filePath}");
             _unityVideoPlayer.url = filePath;
+
+            SetVideoRatio();
+            _unityVideoPlayer.Play();
         }
 
+        void SetVideoRatio()
+        {
+            RectTransform rectTransform = _videoBoard.GetComponent<RectTransform>();
+            if(rectTransform == null)
+            {
+                Debug.LogError($"VideoBoard에 RectTransform이 Null이다!");
+                return;
+            }
+
+            Texture texture = _videoBoard.GetComponent<RawImage>().texture;
+            if(texture == null)
+            {
+                Debug.LogError($"VideoBoard에 RawImage의 Texture가 Null이다!");
+                return;
+            }
+
+            float widthRatio = (float)rectTransform.sizeDelta.x / texture.width;
+            float rectHeight = widthRatio * texture.height;
+            rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectHeight);
+        }
+
+        /// <summary>
+        /// 영상 조작 관련
+        /// </summary>
+        void SetPlayPause()
+        {
+            if (_unityVideoPlayer.isPlaying) _unityVideoPlayer.Pause();
+            else if (_unityVideoPlayer.isPaused) _unityVideoPlayer.Play();
+        }
+
+        void SetVolume(float value)
+        {
+            if (value == 0) return;
+
+            _unityVideoPlayer.SetDirectAudioVolume(0, _unityVideoPlayer.GetDirectAudioVolume(0) + value);
+        }
+
+        void SetDuration(float value)
+        {
+            double length = _unityVideoPlayer.length;
+            double setTime = length * value;
+            _unityVideoPlayer.time = setTime;
+
+            SetTime(length, setTime);
+        }
+
+        void SetDuration(double value)
+        {
+            double length = _unityVideoPlayer.length;
+            double setTime = length * value;
+            _unityVideoPlayer.time = setTime;
+
+            SetTime(length, setTime);
+        }
+
+        void SetTime(double lengthTime, double currentTime)
+        {
+            var lengthDateTime = TimeSpan.FromSeconds(lengthTime);
+            var currentDateTime = TimeSpan.FromSeconds(currentTime);
+
+            _lengthTime.text = string.Format($"{lengthDateTime.Hours}:{lengthDateTime.Minutes}:{lengthDateTime.Seconds}");
+            _currentTime.text = string.Format($"{currentDateTime.Hours}:{currentDateTime.Minutes}:{currentDateTime.Seconds}");
+        }
     }
 }
