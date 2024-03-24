@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ImageDualViewerScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/VideoPlayerScene.unity
+    guid: 08359bc9cd0ed5e4cadfd2da2dab5d2c
   m_configObjects: {}

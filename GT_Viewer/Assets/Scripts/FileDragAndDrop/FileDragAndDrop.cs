@@ -6,17 +6,34 @@ using System;
 
 public class FileDragAndDrop : MonoBehaviour
 {
-    // 드롭된 시점의 파일 경로를 저장할 변수
-    static string _dropedFileFullPath = string.Empty;
-    // 드롭된 시점의 위치
-    static bool _isLeft = false;
-
     // 외부에서 드롭 시점에 실행시킬 이벤트 접근자
     public delegate void DropedEventHandler(string filePath, bool isLeft);
     static public event DropedEventHandler DropedFileEvent;
 
     GUIStyle _log_guiStyle;
     List<string> _log = new List<string>();
+
+    private void Start()
+    {
+        StartCoroutine(CheckSceneControler());
+    }
+
+    IEnumerator<WaitUntil> CheckSceneControler()
+    {
+        Debug.LogWarning($"SceneControler 인스턴스가 Null이다!");
+
+        yield return new WaitUntil(() => GT.SceneControler.Instance != null);
+
+        if (GT.SceneControler.Instance.CheckDontDestroyObjs(gameObject))
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            GT.SceneControler.Instance.AddDontDestroyObj(gameObject);
+        }
+    }
+
     void OnEnable ()
     {
         // must be installed on the main thread to get the right thread id.
