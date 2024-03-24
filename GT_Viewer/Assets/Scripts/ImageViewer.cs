@@ -11,6 +11,8 @@ namespace GT
 {
     public class ImageViewer : MonoBehaviour
     {
+        [SerializeField] GameObject _imageBoard;
+
         // GUI 이미지 렌더러
         [SerializeField] Image _img_left;
         [SerializeField] Image _img_right;
@@ -35,7 +37,7 @@ namespace GT
 
             _btn_video.onClick.AddListener(() =>
             {
-                GoToVideoScene();
+                MainController.Instance.SetMode(ViewMode.VIDEO);
             });
         }
 
@@ -48,6 +50,12 @@ namespace GT
         private void OnDisable()
         {
             FileDragAndDrop.DropedFileEvent -= SetImg;
+        }
+
+        public void SetEnable(bool isEnable)
+        {
+            _imageBoard.SetActive(isEnable);
+            gameObject.SetActive(isEnable);
         }
 
         void ResetImg()
@@ -98,11 +106,6 @@ namespace GT
         void QuitApp()
         {
             Application.Quit();
-        }
-
-        void GoToVideoScene()
-        {
-            SceneManager.LoadScene(SceneList.SCENE_VIDEO_PLAYER);
         }
     }
 }

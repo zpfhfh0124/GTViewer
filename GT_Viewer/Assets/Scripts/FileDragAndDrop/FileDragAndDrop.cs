@@ -13,20 +13,6 @@ public class FileDragAndDrop : MonoBehaviour
     GUIStyle _log_guiStyle;
     List<string> _log = new List<string>();
 
-    private void Start()
-    {
-        StartCoroutine(CheckSceneControler());
-    }
-
-    IEnumerator<WaitUntil> CheckSceneControler()
-    {
-        Debug.LogWarning($"SceneControler 인스턴스가 Null이다!");
-
-        yield return new WaitUntil(() => GT.SceneControler.Instance != null);
-
-        GT.SceneControler.Instance.AddDontDestroyObj(gameObject);
-    }
-
     void OnEnable ()
     {
         // must be installed on the main thread to get the right thread id.

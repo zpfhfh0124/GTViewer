@@ -7,10 +7,12 @@ using UnityEngine.UI;
 
 namespace GT
 {
-    public class VideoPlayer : MonoBehaviour
+    public class VideoViewer : MonoBehaviour
     {
         UnityEngine.Video.VideoPlayer _unityVideoPlayer;
         RenderTexture _renderTexture;
+
+        [SerializeField] GameObject _videoBoard;
 
         [SerializeField] Button _btn_ImageViewer;
 
@@ -18,7 +20,7 @@ namespace GT
         {
             _btn_ImageViewer.onClick.AddListener(() =>
             {
-                GoToImageViewerScene();
+                MainController.Instance.SetMode(ViewMode.IMAGE);
             });
 
             Init();
@@ -32,6 +34,12 @@ namespace GT
         private void OnDisable()
         {
             FileDragAndDrop.DropedFileEvent -= SetVideo;
+        }
+
+        public void SetEnable(bool isEnable)
+        {
+            _videoBoard.SetActive(isEnable);
+            gameObject.SetActive(isEnable);
         }
 
         void Init()
@@ -79,9 +87,5 @@ namespace GT
             _unityVideoPlayer.url = filePath;
         }
 
-        void GoToImageViewerScene()
-        {
-            SceneControler.Instance.SceneChange(SceneList.SCENE_IMAGE_VIEWER);
-        }
     }
 }
