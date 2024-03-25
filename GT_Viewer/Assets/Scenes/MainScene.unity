@@ -1035,13 +1035,14 @@ GameObject:
   - component: {fileID: 622935573}
   - component: {fileID: 622935575}
   - component: {fileID: 622935574}
+  - component: {fileID: 622935576}
   m_Layer: 5
   m_Name: PlayList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &622935573
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1061,7 +1062,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -1200, y: -300.35175}
+  m_SizeDelta: {x: -1200, y: -300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &622935574
 MonoBehaviour:
@@ -1101,6 +1102,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 622935572}
   m_CullTransparentMesh: 1
+--- !u!114 &622935576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622935572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0f71fb8b9b7b3145b84e361c14d4b22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &683867492
 GameObject:
   m_ObjectHideFlags: 0
@@ -2615,6 +2628,7 @@ MonoBehaviour:
   _videoBoard: {fileID: 14192134}
   _btn_ImageViewer: {fileID: 359777646}
   _btn_play: {fileID: 1747420225}
+  _btn_playList: {fileID: 260989921}
   _obj_img_play: {fileID: 221323246}
   _obj_img_guide: {fileID: 2051670683}
   _slider_time: {fileID: 980193953}

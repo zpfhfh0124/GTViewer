@@ -17,6 +17,7 @@ namespace GT
 
         [SerializeField] Button _btn_ImageViewer;
         [SerializeField] Button _btn_play;
+        [SerializeField] Button _btn_playList;
 
         [SerializeField] GameObject _obj_img_play;
         [SerializeField] GameObject _obj_img_guide;
@@ -128,7 +129,8 @@ namespace GT
         void SetVideo(string filePath, bool isLeft)
         {
             // 파일이 동영상 파일인지 검사(avi, mp4, wav, flv...)
-            if (MainController.Instance.CheckFileExtension(ViewMode.VIDEO, filePath) == false) return;
+            if (MainController.Instance.CheckFileExtension(ViewMode.VIDEO, filePath) == false) 
+                return;
 
             SetLocalFileURL(filePath);
 
