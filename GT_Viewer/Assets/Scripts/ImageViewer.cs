@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -73,18 +73,8 @@ namespace GT
         void SetImg(string imgFilePath, bool isLeft)
         {
             // 파일이 이미지 파일인지 검사(jpeg, jpg, png, gif...)
-            string extension = imgFilePath.Split('.').Last();
-            extension = extension.ToLower();
-            List<string> list_img_extension = new List<string> { "jpg", "jpeg", "png", "gif" };
-            if (list_img_extension.Exists(x => x == extension))
-            {
-                Debug.Log($"드롭된 파일의 확장자가 {extension} 이미지 드롭 성공!");
-            }
-            else
-            {
-                Debug.LogWarning($"드롭된 파일의 확장자가 {extension}으로 이미지 파일이 아닙니다.");
+            if (MainController.Instance.CheckFileExtension(ViewMode.IMAGE, imgFilePath) == false)
                 return;
-            }
 
             Image image = isLeft ? _img_left : _img_right;
 

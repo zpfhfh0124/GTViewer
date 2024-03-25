@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using B83.Win32;
@@ -6,6 +6,9 @@ using System;
 
 public class FileDragAndDrop : MonoBehaviour
 {
+    static bool _useLog = false;
+    static public bool UseLog { get { return _useLog; } set { _useLog = value; } } 
+
     // 외부에서 드롭 시점에 실행시킬 이벤트 접근자
     public delegate void DropedEventHandler(string filePath, bool isLeft);
     static public event DropedEventHandler DropedFileEvent;
@@ -65,15 +68,15 @@ public class FileDragAndDrop : MonoBehaviour
 
     private void OnGUI()
     {
-        if (GUILayout.Button("clear log"))
-            _log.Clear();
+        if (_useLog)
+        {
+            if (GUILayout.Button("clear log"))
+                _log.Clear();
 
-        //GUILayout.BeginArea(new Rect(50, 50, 300, 300));
-        //GUILayout.Box("Log Area");
             foreach (var s in _log)
             {
-                GUILayout.Label( s, _log_guiStyle );
+                GUILayout.Label(s, _log_guiStyle);
             }
-        //GUILayout.EndArea();
+        }
     }
 }

@@ -128,19 +128,19 @@ namespace GT
         void SetVideo(string filePath, bool isLeft)
         {
             // 파일이 동영상 파일인지 검사(avi, mp4, wav, flv...)
-            string extension = filePath.Split('.').Last();
-            extension = extension.ToLower();
-            List<string> list_video_extension = new List<string> { "avi", "mp4", "mov", "wmv", "flv", "mkv" };
-            if (list_video_extension.Exists(x => x == extension))
-            {
-                Debug.Log($"드롭된 파일의 확장자가 {extension} 동영상 드롭 성공!");
-            }
-            else
-            {
-                Debug.LogWarning($"드롭된 파일의 확장자가 {extension}으로 동영상 파일이 아닙니다.");
-                return;
-            }
+            if (MainController.Instance.CheckFileExtension(ViewMode.VIDEO, filePath) == false) return;
 
+            SetLocalFileURL(filePath);
+
+            _obj_img_guide.SetActive(false);
+
+            SetVideoRatio();
+            _unityVideoPlayer.Prepare();
+            StartCoroutine(CoroutineWaitVideoPrepared());
+        }
+
+        void SetLocalFileURL(string filePath)
+        {
             // VideoPlayer URL에 세팅 -> url형식 맞춰주기
             // file:// 문자열 앞에 붙혀야함 \ -> / 문자로 교체
             Debug.Log($"{filePath}");
@@ -148,12 +148,6 @@ namespace GT
             filePath = $"file://{filePath}";
             Debug.Log($"정제된 path - {filePath}");
             _unityVideoPlayer.url = filePath;
-            
-            _obj_img_guide.SetActive(false);
-
-            SetVideoRatio();
-            _unityVideoPlayer.Prepare();
-            StartCoroutine(CoroutineWaitVideoPrepared());
         }
 
         IEnumerator CoroutineWaitVideoPrepared()
