@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -16,13 +16,16 @@ namespace GT
         [SerializeField] GameObject _videoBoard;
 
         [SerializeField] Button _btn_ImageViewer;
+        [SerializeField] Button _btn_play;
 
-        [SerializeField] Slider _slider;
+        [SerializeField] GameObject _obj_img_play;
+        [SerializeField] GameObject _obj_img_guide;
+
+        [SerializeField] Slider _slider_time;
+        [SerializeField] Slider _slider_volume;
 
         [SerializeField] Text _lengthTime;
         [SerializeField] Text _currentTime;
-
-        float _elapsedTime = 0;
 
         void Start()
         {
@@ -31,11 +34,21 @@ namespace GT
                 MainController.Instance.SetMode(ViewMode.IMAGE);
             });
 
-            _slider.onValueChanged.AddListener((value) =>
+            _slider_time.onValueChanged.AddListener((value) =>
             {
                 SetTimeSlider(value);
             });
-            
+
+            _slider_volume.onValueChanged.AddListener((value) =>
+            {
+                SetVolume(value, true);
+            });
+
+            _btn_play.onClick.AddListener(() =>
+            {
+                SetPlayPause();
+            });
+
             Init();
         }
 
@@ -57,13 +70,13 @@ namespace GT
             {
                 SetPlayPause();
             }
-            else if (Input.GetKey(KeyCode.UpArrow))
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-                SetVolume(0.1f);
+                SetVolume(0.05f);
             }
-            else if (Input.GetKey(KeyCode.DownArrow))
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                SetVolume(-0.1f);
+                SetVolume(-0.05f);
             }
             else if (Input.GetKey(KeyCode.LeftArrow))
             {
@@ -74,13 +87,15 @@ namespace GT
                 SetExplorationTimeline(10.0f);
             }
 
-            // 재생중일 경우 재생시간 계산 및 타임슬라이더 현재 타임라인으로 조정
+            // 재생중일 경우 
             if (_unityVideoPlayer.isPlaying)
             {
+                // 재생시간 계산
                 SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
-                
+
+                // 타임슬라이더 현재 타임라인으로 조정
                 float rate = (float)_unityVideoPlayer.time / (float)_unityVideoPlayer.length;
-                _slider.SetValueWithoutNotify(rate);
+                _slider_time.SetValueWithoutNotify(rate);
             }
         }
 
@@ -92,6 +107,9 @@ namespace GT
 
         void Init()
         {
+            _obj_img_play.SetActive(false);
+            _obj_img_guide.SetActive(true);
+
             _unityVideoPlayer = GetComponent<UnityEngine.Video.VideoPlayer>();
             if(_unityVideoPlayer == null)
             {
@@ -130,12 +148,21 @@ namespace GT
             filePath = $"file://{filePath}";
             Debug.Log($"정제된 path - {filePath}");
             _unityVideoPlayer.url = filePath;
+            
+            _obj_img_guide.SetActive(false);
 
             SetVideoRatio();
-            SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
-            
-            _unityVideoPlayer.Play();
+            _unityVideoPlayer.Prepare();
+            StartCoroutine(CoroutineWaitVideoPrepared());
+        }
 
+        IEnumerator CoroutineWaitVideoPrepared()
+        {
+            yield return new WaitUntil(() => _unityVideoPlayer.isPrepared);
+
+            _slider_volume.SetValueWithoutNotify(_unityVideoPlayer.GetDirectAudioVolume(0));
+            SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
+            SetPlayPause();
         }
 
         void SetVideoRatio()
@@ -167,30 +194,33 @@ namespace GT
             if (_unityVideoPlayer.isPlaying)
             {
                 _unityVideoPlayer.Pause();
+                _obj_img_play.SetActive(true);
             }
             else
             {
                 _unityVideoPlayer.Play();
+                _obj_img_play.SetActive(false);
             }
         }
 
-        void SetVolume(float value)
+        void SetVolume(float value, bool isSlider = false)
         {
             if (value == 0) return;
 
-            _unityVideoPlayer.SetDirectAudioVolume(0, _unityVideoPlayer.GetDirectAudioVolume(0) + value);
+            if(isSlider) _unityVideoPlayer.SetDirectAudioVolume(0, value);
+            else
+            {
+                _unityVideoPlayer.SetDirectAudioVolume(0, _unityVideoPlayer.GetDirectAudioVolume(0) + value);
+                _slider_volume.value = _unityVideoPlayer.GetDirectAudioVolume(0);
+            }
+
+            //float cur_volume = _unityVideoPlayer.GetDirectAudioVolume(0);
+            //Debug.Log($"현재 볼륨 : {cur_volume} | 음량조절슬라이더 : {sliderValue}");
         }
 
         void SetExplorationTimeline(float value)
         {
             _unityVideoPlayer.time += value;
-        }
-
-        void SetTimeSlider(float sliderRate)
-        {
-            if (_unityVideoPlayer == null) return;
-
-            _unityVideoPlayer.time = sliderRate * _unityVideoPlayer.length;
         }
 
         void SetTime(double lengthTime, double currentTime)
@@ -200,6 +230,16 @@ namespace GT
 
             _lengthTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", lengthDateTime.Hours, lengthDateTime.Minutes, lengthDateTime.Seconds);
             _currentTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", currentDateTime.Hours, currentDateTime.Minutes, currentDateTime.Seconds);
+        }
+
+        /// <summary>
+        /// 슬라이더 조작 관련
+        /// </summary>
+        void SetTimeSlider(float sliderRate)
+        {
+            if (_unityVideoPlayer == null) return;
+
+            _unityVideoPlayer.time = sliderRate * _unityVideoPlayer.length;
         }
     }
 }
