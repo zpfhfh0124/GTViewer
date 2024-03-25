@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +22,8 @@ namespace GT
         [SerializeField] Text _lengthTime;
         [SerializeField] Text _currentTime;
 
+        float _elapsedTime = 0;
+
         void Start()
         {
             _btn_ImageViewer.onClick.AddListener(() =>
@@ -31,9 +33,9 @@ namespace GT
 
             _slider.onValueChanged.AddListener((value) =>
             {
-                SetDuration(value);
+                SetTimeSlider(value);
             });
-
+            
             Init();
         }
 
@@ -49,7 +51,9 @@ namespace GT
 
         void Update()
         {
-            if (Input.GetKey(KeyCode.Space))
+            // í‚¤ ì…ë ¥
+            // ì…ë ¥ í‚¤ì— ë”°ë¥¸ í•¨ìˆ˜ í˜¸ì¶œ
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 SetPlayPause();
             }
@@ -60,6 +64,23 @@ namespace GT
             else if (Input.GetKey(KeyCode.DownArrow))
             {
                 SetVolume(-0.1f);
+            }
+            else if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                SetExplorationTimeline(-10.0f);
+            }
+            else if (Input.GetKey(KeyCode.RightArrow))
+            {
+                SetExplorationTimeline(10.0f);
+            }
+
+            // ì¬ìƒì¤‘ì¼ ê²½ìš° ì¬ìƒì‹œê°„ ê³„ì‚° ë° íƒ€ì„ìŠ¬ë¼ì´ë” í˜„ì¬ íƒ€ì„ë¼ì¸ìœ¼ë¡œ ì¡°ì •
+            if (_unityVideoPlayer.isPlaying)
+            {
+                SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
+                
+                float rate = (float)_unityVideoPlayer.time / (float)_unityVideoPlayer.length;
+                _slider.SetValueWithoutNotify(rate);
             }
         }
 
@@ -74,47 +95,47 @@ namespace GT
             _unityVideoPlayer = GetComponent<UnityEngine.Video.VideoPlayer>();
             if(_unityVideoPlayer == null)
             {
-                Debug.LogError($"ÇöÀç {gameObject.name}¿¡ UnityEngine VideoPlayer ÄÄÆ÷³ÍÆ®°¡ ¾ÈºÙ¾îÀÖ´Ù.");
+                Debug.LogError($"í˜„ì¬ {gameObject.name}ì— UnityEngine VideoPlayer ì»´í¬ë„ŒíŠ¸ê°€ ì•ˆë¶™ì–´ìˆë‹¤.");
                 return;
             }
 
             _renderTexture = _unityVideoPlayer.targetTexture;
             if(_renderTexture == null)
             {
-                Debug.LogError($"Render Texture°¡ NullÀÌ´Ù!");
+                Debug.LogError($"Render Textureê°€ Nullì´ë‹¤!");
                 return;
             }
         }
 
         void SetVideo(string filePath, bool isLeft)
         {
-            // ÆÄÀÏÀÌ µ¿¿µ»ó ÆÄÀÏÀÎÁö °Ë»ç(avi, mp4, wav, flv...)
+            // íŒŒì¼ì´ ë™ì˜ìƒ íŒŒì¼ì¸ì§€ ê²€ì‚¬(avi, mp4, wav, flv...)
             string extension = filePath.Split('.').Last();
             extension = extension.ToLower();
             List<string> list_video_extension = new List<string> { "avi", "mp4", "mov", "wmv", "flv", "mkv" };
             if (list_video_extension.Exists(x => x == extension))
             {
-                Debug.Log($"µå·ÓµÈ ÆÄÀÏÀÇ È®ÀåÀÚ°¡ {extension} µ¿¿µ»ó µå·Ó ¼º°ø!");
+                Debug.Log($"ë“œë¡­ëœ íŒŒì¼ì˜ í™•ì¥ìê°€ {extension} ë™ì˜ìƒ ë“œë¡­ ì„±ê³µ!");
             }
             else
             {
-                Debug.LogWarning($"µå·ÓµÈ ÆÄÀÏÀÇ È®ÀåÀÚ°¡ {extension}À¸·Î µ¿¿µ»ó ÆÄÀÏÀÌ ¾Æ´Õ´Ï´Ù.");
+                Debug.LogWarning($"ë“œë¡­ëœ íŒŒì¼ì˜ í™•ì¥ìê°€ {extension}ìœ¼ë¡œ ë™ì˜ìƒ íŒŒì¼ì´ ì•„ë‹™ë‹ˆë‹¤.");
                 return;
             }
 
-            // VideoPlayer URL¿¡ ¼¼ÆÃ -> urlÇü½Ä ¸ÂÃçÁÖ±â
-            // file:// ¹®ÀÚ¿­ ¾Õ¿¡ ºÙÇô¾ßÇÔ
-            // \ -> / ¹®ÀÚ·Î ±³Ã¼
+            // VideoPlayer URLì— ì„¸íŒ… -> urlí˜•ì‹ ë§ì¶°ì£¼ê¸°
+            // file:// ë¬¸ìì—´ ì•ì— ë¶™í˜€ì•¼í•¨ \ -> / ë¬¸ìë¡œ êµì²´
             Debug.Log($"{filePath}");
-
             filePath = filePath.Replace('\\', '/');
             filePath = $"file://{filePath}";
-            
-            Debug.Log($"Á¤Á¦µÈ path - {filePath}");
+            Debug.Log($"ì •ì œëœ path - {filePath}");
             _unityVideoPlayer.url = filePath;
 
             SetVideoRatio();
+            SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
+            
             _unityVideoPlayer.Play();
+
         }
 
         void SetVideoRatio()
@@ -122,14 +143,14 @@ namespace GT
             RectTransform rectTransform = _videoBoard.GetComponent<RectTransform>();
             if(rectTransform == null)
             {
-                Debug.LogError($"VideoBoard¿¡ RectTransformÀÌ NullÀÌ´Ù!");
+                Debug.LogError($"VideoBoardì— RectTransformì´ Nullì´ë‹¤!");
                 return;
             }
 
             Texture texture = _videoBoard.GetComponent<RawImage>().texture;
             if(texture == null)
             {
-                Debug.LogError($"VideoBoard¿¡ RawImageÀÇ Texture°¡ NullÀÌ´Ù!");
+                Debug.LogError($"VideoBoardì— RawImageì˜ Textureê°€ Nullì´ë‹¤!");
                 return;
             }
 
@@ -139,12 +160,18 @@ namespace GT
         }
 
         /// <summary>
-        /// ¿µ»ó Á¶ÀÛ °ü·Ã
+        /// ì˜ìƒ ì¡°ì‘ ê´€ë ¨
         /// </summary>
         void SetPlayPause()
         {
-            if (_unityVideoPlayer.isPlaying) _unityVideoPlayer.Pause();
-            else if (_unityVideoPlayer.isPaused) _unityVideoPlayer.Play();
+            if (_unityVideoPlayer.isPlaying)
+            {
+                _unityVideoPlayer.Pause();
+            }
+            else
+            {
+                _unityVideoPlayer.Play();
+            }
         }
 
         void SetVolume(float value)
@@ -154,22 +181,16 @@ namespace GT
             _unityVideoPlayer.SetDirectAudioVolume(0, _unityVideoPlayer.GetDirectAudioVolume(0) + value);
         }
 
-        void SetDuration(float value)
+        void SetExplorationTimeline(float value)
         {
-            double length = _unityVideoPlayer.length;
-            double setTime = length * value;
-            _unityVideoPlayer.time = setTime;
-
-            SetTime(length, setTime);
+            _unityVideoPlayer.time += value;
         }
 
-        void SetDuration(double value)
+        void SetTimeSlider(float sliderRate)
         {
-            double length = _unityVideoPlayer.length;
-            double setTime = length * value;
-            _unityVideoPlayer.time = setTime;
+            if (_unityVideoPlayer == null) return;
 
-            SetTime(length, setTime);
+            _unityVideoPlayer.time = sliderRate * _unityVideoPlayer.length;
         }
 
         void SetTime(double lengthTime, double currentTime)
@@ -177,8 +198,8 @@ namespace GT
             var lengthDateTime = TimeSpan.FromSeconds(lengthTime);
             var currentDateTime = TimeSpan.FromSeconds(currentTime);
 
-            _lengthTime.text = string.Format($"{lengthDateTime.Hours}:{lengthDateTime.Minutes}:{lengthDateTime.Seconds}");
-            _currentTime.text = string.Format($"{currentDateTime.Hours}:{currentDateTime.Minutes}:{currentDateTime.Seconds}");
+            _lengthTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", lengthDateTime.Hours, lengthDateTime.Minutes, lengthDateTime.Seconds);
+            _currentTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", currentDateTime.Hours, currentDateTime.Minutes, currentDateTime.Seconds);
         }
     }
 }
