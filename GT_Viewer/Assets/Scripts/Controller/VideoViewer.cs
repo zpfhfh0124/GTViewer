@@ -13,6 +13,8 @@ namespace GT
         UnityEngine.Video.VideoPlayer _unityVideoPlayer;
         RenderTexture _renderTexture;
 
+        [SerializeField] VideoPlayList _cs_videoPlayList;
+
         [SerializeField] GameObject _videoBoard;
 
         [SerializeField] Button _btn_ImageViewer;
@@ -48,6 +50,11 @@ namespace GT
             _btn_play.onClick.AddListener(() =>
             {
                 SetPlayPause();
+            });
+
+            _btn_playList.onClick.AddListener(() =>
+            {
+                OnPlayList();
             });
 
             Init();
@@ -110,6 +117,7 @@ namespace GT
         {
             _obj_img_play.SetActive(false);
             _obj_img_guide.SetActive(true);
+            _cs_videoPlayList.SetEnable(false);
 
             _unityVideoPlayer = GetComponent<UnityEngine.Video.VideoPlayer>();
             if(_unityVideoPlayer == null)
@@ -180,6 +188,11 @@ namespace GT
             float widthRatio = (float)rectTransform.sizeDelta.x / texture.width;
             float rectHeight = widthRatio * texture.height;
             rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectHeight);
+        }
+
+        void OnPlayList()
+        {
+            _cs_videoPlayList.SetEnable(true);
         }
 
         /// <summary>
