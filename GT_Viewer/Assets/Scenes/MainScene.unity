@@ -3330,8 +3330,8 @@ MonoBehaviour:
   _obj_img_guide: {fileID: 2051670683}
   _slider_time: {fileID: 980193953}
   _slider_volume: {fileID: 1027871602}
-  _lengthTime: {fileID: 0}
-  _currentTime: {fileID: 0}
+  _text_lengthTime: {fileID: 2076235731}
+  _text_currentTime: {fileID: 66836898}
 --- !u!328 &1715513796
 VideoPlayer:
   m_ObjectHideFlags: 0

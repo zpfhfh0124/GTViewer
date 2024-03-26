@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,8 +28,8 @@ namespace GT
         [SerializeField] Slider _slider_time;
         [SerializeField] Slider _slider_volume;
 
-        [SerializeField] TextMesh _lengthTime;
-        [SerializeField] TextMesh _currentTime;
+        [SerializeField] TextMeshProUGUI _text_lengthTime;
+        [SerializeField] TextMeshProUGUI _text_currentTime;
 
         void Start()
         {
@@ -239,8 +240,8 @@ namespace GT
             var lengthDateTime = TimeSpan.FromSeconds(lengthTime);
             var currentDateTime = TimeSpan.FromSeconds(currentTime);
 
-            _lengthTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", lengthDateTime.Hours, lengthDateTime.Minutes, lengthDateTime.Seconds);
-            _currentTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", currentDateTime.Hours, currentDateTime.Minutes, currentDateTime.Seconds);
+            _text_lengthTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", lengthDateTime.Hours, lengthDateTime.Minutes, lengthDateTime.Seconds);
+            _text_currentTime.text = string.Format("{0:D2}:{1:D2}:{2:D2}", currentDateTime.Hours, currentDateTime.Minutes, currentDateTime.Seconds);
         }
 
         /// <summary>
