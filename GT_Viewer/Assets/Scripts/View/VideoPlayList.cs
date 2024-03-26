@@ -10,6 +10,10 @@ namespace GT
         [SerializeField] Button _btn_close;
         [SerializeField] GameObject _prefab_playListItem;
 
+        [SerializeField] ScrollRect _scrollRect;
+
+        List<string> _playList = new List<string>();
+
         private void Start()
         {
             _btn_close.onClick.AddListener(() =>
@@ -25,7 +29,9 @@ namespace GT
 
         public void SetVideoPlayList(List<string> fileList)
         {
+            _playList = fileList;
 
+            
         }
     }
 

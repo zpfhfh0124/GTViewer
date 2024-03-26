@@ -27,8 +27,8 @@ namespace GT
         [SerializeField] Slider _slider_time;
         [SerializeField] Slider _slider_volume;
 
-        [SerializeField] Text _lengthTime;
-        [SerializeField] Text _currentTime;
+        [SerializeField] TextMesh _lengthTime;
+        [SerializeField] TextMesh _currentTime;
 
         void Start()
         {
@@ -193,6 +193,8 @@ namespace GT
         void OnPlayList()
         {
             _cs_videoPlayList.SetEnable(true);
+
+            //_cs_videoPlayList.SetVideoPlayList()
         }
 
         /// <summary>
