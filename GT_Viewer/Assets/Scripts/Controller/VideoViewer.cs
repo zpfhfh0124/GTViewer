@@ -6,13 +6,13 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace GT
 {
     public class VideoViewer : MonoBehaviour
     {
-        UnityEngine.Video.VideoPlayer _unityVideoPlayer;
-        RenderTexture _renderTexture;
+        VideoPlayer _videoPlayer;
 
         [SerializeField] VideoPlayList _cs_videoPlayList;
 
@@ -97,13 +97,13 @@ namespace GT
             }
 
             // 재생중일 경우 
-            if (_unityVideoPlayer.isPlaying)
+            if (_videoPlayer.isPlaying)
             {
                 // 재생시간 계산
-                SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
+                SetTime(_videoPlayer.length, _videoPlayer.time);
 
                 // 타임슬라이더 현재 타임라인으로 조정
-                float rate = (float)_unityVideoPlayer.time / (float)_unityVideoPlayer.length;
+                float rate = (float)_videoPlayer.time / (float)_videoPlayer.length;
                 _slider_time.SetValueWithoutNotify(rate);
             }
         }
@@ -120,17 +120,10 @@ namespace GT
             _obj_img_guide.SetActive(true);
             _cs_videoPlayList.SetEnable(false);
 
-            _unityVideoPlayer = GetComponent<UnityEngine.Video.VideoPlayer>();
-            if(_unityVideoPlayer == null)
+            _videoPlayer = GetComponent<VideoPlayer>();
+            if(_videoPlayer == null)
             {
                 Debug.LogError($"현재 {gameObject.name}에 UnityEngine VideoPlayer 컴포넌트가 안붙어있다.");
-                return;
-            }
-
-            _renderTexture = _unityVideoPlayer.targetTexture;
-            if(_renderTexture == null)
-            {
-                Debug.LogError($"Render Texture가 Null이다!");
                 return;
             }
         }
@@ -145,8 +138,7 @@ namespace GT
 
             _obj_img_guide.SetActive(false);
 
-            SetVideoRatio();
-            _unityVideoPlayer.Prepare();
+            _videoPlayer.Prepare();
             StartCoroutine(CoroutineWaitVideoPrepared());
         }
 
@@ -158,37 +150,70 @@ namespace GT
             filePath = filePath.Replace('\\', '/');
             filePath = $"file://{filePath}";
             Debug.Log($"정제된 path - {filePath}");
-            _unityVideoPlayer.url = filePath;
+            _videoPlayer.url = filePath;
         }
 
         IEnumerator CoroutineWaitVideoPrepared()
         {
-            yield return new WaitUntil(() => _unityVideoPlayer.isPrepared);
-
-            _slider_volume.SetValueWithoutNotify(_unityVideoPlayer.GetDirectAudioVolume(0));
-            SetTime(_unityVideoPlayer.length, _unityVideoPlayer.time);
+            yield return new WaitUntil(() => _videoPlayer.isPrepared);
+            ResizeVideo();
+            _slider_volume.SetValueWithoutNotify(_videoPlayer.GetDirectAudioVolume(0));
+            SetTime(_videoPlayer.length, _videoPlayer.time);
             SetPlayPause();
         }
-
-        void SetVideoRatio()
+        
+        void ResizeVideo()
         {
+            int newWidth = (int)_videoPlayer.width;
+            int newHeight = (int)_videoPlayer.height;
+
+            _videoPlayer.targetTexture = new RenderTexture(newWidth, newHeight, 1);
+            RawImage rawImage = _videoBoard.GetComponent<RawImage>();
+            if(rawImage == null)
+            {
+                Debug.LogError($"{_videoBoard.name}의 RawImage가 Null이다!");
+            }
+
+            rawImage.texture = _videoPlayer.targetTexture;
+
+            // 비율 맞추기
             RectTransform rectTransform = _videoBoard.GetComponent<RectTransform>();
-            if(rectTransform == null)
+            if (rectTransform == null)
             {
-                Debug.LogError($"VideoBoard에 RectTransform이 Null이다!");
-                return;
+                Debug.LogError($"{_videoBoard.name}의 RectTransform Null이다!");
             }
 
-            Texture texture = _videoBoard.GetComponent<RawImage>().texture;
-            if(texture == null)
+            // 현재 화면의 가로와 세로 길이
+            float screenWidth = Screen.width;
+            float screenHeight = Screen.height;
+            Debug.Log($"현재 화면 크기 : {screenWidth}*{screenHeight}");
+
+            // 현재 동영상의 너비와 높이
+            float videoWidth = _videoPlayer.width;
+            float videoHeight = _videoPlayer.height;
+            Debug.Log($"동영상 크기 : {videoWidth}*{videoHeight}");
+            
+            // 동영상 비율
+            float videoAspectRatio = videoWidth / videoHeight;
+
+            // RawImage의 크기를 화면에 꽉 차도록 설정
+            float rawImageWidth = screenWidth;
+            float rawImageHeight = screenHeight;
+
+            // 비디오의 가로/세로 비율에 따라 RawImage의 크기 조정
+            if (videoAspectRatio > screenWidth / screenHeight)
             {
-                Debug.LogError($"VideoBoard에 RawImage의 Texture가 Null이다!");
-                return;
+                // 비디오의 가로/세로 비율이 화면보다 더 가로 방향에 가까운 경우
+                rawImageHeight = screenWidth / videoAspectRatio;
+            }
+            else
+            {
+                // 비디오의 가로/세로 비율이 화면보다 더 세로 방향에 가까운 경우
+                rawImageWidth = screenHeight * videoAspectRatio;
             }
 
-            float widthRatio = (float)rectTransform.sizeDelta.x / texture.width;
-            float rectHeight = widthRatio * texture.height;
-            rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectHeight);
+            // RawImage의 크기 설정
+            rectTransform.sizeDelta = new Vector2(rawImageWidth, rawImageHeight);
         }
 
         void OnPlayList()
@@ -203,14 +228,14 @@ namespace GT
         /// </summary>
         void SetPlayPause()
         {
-            if (_unityVideoPlayer.isPlaying)
+            if (_videoPlayer.isPlaying)
             {
-                _unityVideoPlayer.Pause();
+                _videoPlayer.Pause();
                 _obj_img_play.SetActive(true);
             }
             else
             {
-                _unityVideoPlayer.Play();
+                _videoPlayer.Play();
                 _obj_img_play.SetActive(false);
             }
         }
@@ -219,11 +244,11 @@ namespace GT
         {
             if (value == 0) return;
 
-            if(isSlider) _unityVideoPlayer.SetDirectAudioVolume(0, value);
+            if(isSlider) _videoPlayer.SetDirectAudioVolume(0, value);
             else
             {
-                _unityVideoPlayer.SetDirectAudioVolume(0, _unityVideoPlayer.GetDirectAudioVolume(0) + value);
-                _slider_volume.value = _unityVideoPlayer.GetDirectAudioVolume(0);
+                _videoPlayer.SetDirectAudioVolume(0, _videoPlayer.GetDirectAudioVolume(0) + value);
+                _slider_volume.value = _videoPlayer.GetDirectAudioVolume(0);
             }
 
             //float cur_volume = _unityVideoPlayer.GetDirectAudioVolume(0);
@@ -232,7 +257,7 @@ namespace GT
 
         void SetExplorationTimeline(float value)
         {
-            _unityVideoPlayer.time += value;
+            _videoPlayer.time += value;
         }
 
         void SetTime(double lengthTime, double currentTime)
@@ -249,9 +274,9 @@ namespace GT
         /// </summary>
         void SetTimeSlider(float sliderRate)
         {
-            if (_unityVideoPlayer == null) return;
+            if (_videoPlayer == null) return;
 
-            _unityVideoPlayer.time = sliderRate * _unityVideoPlayer.length;
+            _videoPlayer.time = sliderRate * _videoPlayer.length;
         }
     }
 }
