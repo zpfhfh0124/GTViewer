@@ -21,18 +21,66 @@ namespace GT
 
         static List<string> _dontDestroyObjectNames = new List<string>();
 
+        // GUI Log 표시
+        static bool _useLog = false;
+        static public bool UseLog { get { return _useLog; } set { _useLog = value; } }
+
+        GUIStyle _log_guiStyle;
+        public List<string> _log = new List<string>();
+
         private void Awake()
         {
             Instance = this;
             SetMode(ViewMode.VIDEO);
         }
 
+        private void OnEnable()
+        {
+            Application.logMessageReceived += HandleAppLog;
+
+            _log_guiStyle = new GUIStyle("label");
+            _log_guiStyle.fontSize = 15;
+            _log_guiStyle.fontStyle = FontStyle.Bold;
+            _log_guiStyle.normal.textColor = Color.gray;
+            _log_guiStyle.normal.background = new Texture2D(Screen.width / 2, Screen.height / 2);
+        }
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                FileDragAndDrop.UseLog = !FileDragAndDrop.UseLog;
+                _useLog = !_useLog;
             }
+        }
+
+        public void AddLog(string log)
+        {
+            _log.Add(log);
+        }
+
+        void HandleAppLog(string log, string stackTrace, LogType logType)
+        {
+            Color color = Color.gray;
+
+            switch (logType)
+            {
+                case LogType.Log:
+                    color = Color.green;
+                    break;
+                case LogType.Error:
+                case LogType.Exception:
+                    color = Color.red;
+                    break;
+                case LogType.Assert:
+                    color = Color.blue;
+                    break;
+                case LogType.Warning:
+                    color = Color.yellow;
+                    break;
+            }
+
+            log = $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{log}</color>";
+            AddLog(log);
         }
 
         public void SetMode(ViewMode mode)
@@ -88,5 +136,19 @@ namespace GT
             string cur_directory = string.Empty;
             
         }*/
+
+        private void OnGUI()
+        {
+            if (_useLog)
+            {
+                if (GUILayout.Button("clear log"))
+                    _log.Clear();
+
+                foreach (var s in _log)
+                {
+                    GUILayout.Label(s);
+                }
+            }
+        }
     }
 }

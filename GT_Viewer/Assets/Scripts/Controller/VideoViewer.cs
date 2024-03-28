@@ -185,7 +185,7 @@ namespace GT
 
             // 현재 화면의 가로와 세로 길이
             float screenWidth = Screen.width;
-            float screenHeight = Screen.height;
+            float screenHeight = Screen.height - 150; // 창 최대화하면 위 아래가 잘리기 때문에 조정
             Debug.Log($"현재 화면 크기 : {screenWidth}*{screenHeight}");
 
             // 현재 동영상의 너비와 높이
