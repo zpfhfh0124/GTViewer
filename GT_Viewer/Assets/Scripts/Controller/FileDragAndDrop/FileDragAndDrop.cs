@@ -10,6 +10,10 @@ public class FileDragAndDrop : MonoBehaviour
     public delegate void DropedEventHandler(string filePath, bool isLeft);
     static public event DropedEventHandler DropedFileEvent;
 
+    // 드롭된 파일 경로 (최근 파일)
+    string _dropedFilePath;
+    public string DropedFilePath { get { return _dropedFilePath; } }
+
     void OnEnable ()
     {
         // must be installed on the main thread to get the right thread id.
@@ -36,6 +40,7 @@ public class FileDragAndDrop : MonoBehaviour
         {
             // do something with the dropped file names. aPos will contain the 
             // mouse position within the window where the files has been dropped.
+            _dropedFilePath = aFiles[0];
             string str = $"드롭된 파일 수 : { aFiles.Count }. 드롭된 POINT : { aPos } \n\t FilePathName : {aFiles[0]}";
             Debug.Log(str);
             GT.MainController.Instance.AddLog(str);

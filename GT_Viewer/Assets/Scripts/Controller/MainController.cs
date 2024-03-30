@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -131,11 +132,36 @@ namespace GT
             }
         }
 
-        /*public List<string> GetDirectoryFileList(string filePath)
+        public string GetLocalFileURL(string filePath)
         {
-            string cur_directory = string.Empty;
-            
-        }*/
+            // VideoPlayer URL에 세팅 -> url형식 맞춰주기
+            // file:// 문자열 앞에 붙혀야함 \ -> / 문자로 교체
+            Debug.Log($"{filePath}");
+            filePath = filePath.Replace('\\', '/');
+            filePath = $"file://{filePath}";
+            Debug.Log($"정제된 path - {filePath}");
+            return filePath;
+        }
+
+        // 해당 파일의 디렉토리 하위 파일들 탐색
+        public List<string> GetDirectoryFileList(string filePath, ViewMode viewMode)
+        {
+            // file:// 프로토콜 제거
+            filePath = filePath.Replace("file://", "");
+            filePath = filePath.Replace(filePath.Split('/').Last(), "");
+            string[] cur_Directory_arr = Directory.GetFiles(filePath);
+            List<string> cur_directory = cur_Directory_arr.ToList<string>();
+
+            foreach (var file in cur_directory)
+            {
+                bool isExtension = CheckFileExtension(viewMode, file);
+                //Debug.Log($"현재 경로 탐색 파일 : {file} | {viewMode} : {isExtension}");
+
+                if (isExtension == false) cur_directory.Remove(file); 
+            }
+
+            return cur_directory;
+        }
 
         private void OnGUI()
         {

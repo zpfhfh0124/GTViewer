@@ -15,6 +15,7 @@ namespace GT
         VideoPlayer _videoPlayer;
 
         [SerializeField] VideoPlayList _cs_videoPlayList;
+        FileDragAndDrop _cs_fileDragAndDrop;
 
         [SerializeField] GameObject _videoBoard;
 
@@ -126,6 +127,13 @@ namespace GT
                 Debug.LogError($"현재 {gameObject.name}에 UnityEngine VideoPlayer 컴포넌트가 안붙어있다.");
                 return;
             }
+
+            _cs_fileDragAndDrop = FindObjectOfType<FileDragAndDrop>();
+            if (_cs_fileDragAndDrop == null)
+            {
+                Debug.LogError($"현재 {gameObject.scene}에 FileDragAndDrop 오브젝트가 없다.");
+                return;
+            }
         }
 
         void SetVideo(string filePath, bool isLeft)
@@ -134,23 +142,11 @@ namespace GT
             if (MainController.Instance.CheckFileExtension(ViewMode.VIDEO, filePath) == false) 
                 return;
 
-            SetLocalFileURL(filePath);
-
+            _videoPlayer.url = MainController.Instance.GetLocalFileURL(filePath);
             _obj_img_guide.SetActive(false);
 
             _videoPlayer.Prepare();
             StartCoroutine(CoroutineWaitVideoPrepared());
-        }
-
-        void SetLocalFileURL(string filePath)
-        {
-            // VideoPlayer URL에 세팅 -> url형식 맞춰주기
-            // file:// 문자열 앞에 붙혀야함 \ -> / 문자로 교체
-            Debug.Log($"{filePath}");
-            filePath = filePath.Replace('\\', '/');
-            filePath = $"file://{filePath}";
-            Debug.Log($"정제된 path - {filePath}");
-            _videoPlayer.url = filePath;
         }
 
         IEnumerator CoroutineWaitVideoPrepared()
@@ -160,8 +156,10 @@ namespace GT
             _slider_volume.SetValueWithoutNotify(_videoPlayer.GetDirectAudioVolume(0));
             SetTime(_videoPlayer.length, _videoPlayer.time);
             SetPlayPause();
+            SetPlayList();
         }
         
+        // 동영상 비율에 맞춰서 크기 조정 (빌드 앱에서만)
         void ResizeVideo()
         {
             int newWidth = (int)_videoPlayer.width;
@@ -176,13 +174,14 @@ namespace GT
 
             rawImage.texture = _videoPlayer.targetTexture;
 
-            // 비율 맞추기
             RectTransform rectTransform = _videoBoard.GetComponent<RectTransform>();
             if (rectTransform == null)
             {
                 Debug.LogError($"{_videoBoard.name}의 RectTransform Null이다!");
             }
 
+#if UNITY_STANDALONE && !UNITY_EDITOR
+            // 비율 맞추기
             // 현재 화면의 가로와 세로 길이
             float screenWidth = Screen.width;
             float screenHeight = Screen.height - 150; // 창 최대화하면 위 아래가 잘리기 때문에 조정
@@ -211,9 +210,21 @@ namespace GT
                 // 비디오의 가로/세로 비율이 화면보다 더 세로 방향에 가까운 경우
                 rawImageWidth = screenHeight * videoAspectRatio;
             }
-
             // RawImage의 크기 설정
             rectTransform.sizeDelta = new Vector2(rawImageWidth, rawImageHeight);
+#endif
+        }
+
+        void SetPlayList()
+        {
+            if ( string.IsNullOrEmpty(_videoPlayer.url) )
+            {
+                Debug.LogWarning("현재 재생중인 동영상 파일이 없다.");
+                return;
+            }
+
+            List<string> cur_fileList = MainController.Instance.GetDirectoryFileList(_videoPlayer.url, ViewMode.VIDEO);
+            _cs_videoPlayList.SetVideoPlayList(cur_fileList);
         }
 
         void OnPlayList()
