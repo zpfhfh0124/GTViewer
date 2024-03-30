@@ -22,6 +22,10 @@ namespace GT
         [SerializeField] Button _btn_quit;
         [SerializeField] Button _btn_video;
 
+        // 현재 로드된 이미지의 디렉토리 하위 이미지 파일 리스트
+        List<string> _imgFiles_left = new List<string>();
+        List<string> _imgFiles_right = new List<string>();
+
         void Start()
         {
             // 버튼 리스너 등록

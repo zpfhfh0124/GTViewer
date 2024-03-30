@@ -122,7 +122,7 @@ namespace GT
             
             if (list_extension.Exists(x => x == extension))
             {
-                Debug.Log($"드롭된 파일의 확장자가 {extension}. {viewMode} 드롭 성공!");
+                //Debug.Log($"드롭된 파일의 확장자가 {extension}. {viewMode} 성공!");
                 return true;
             }
             else
@@ -141,6 +141,12 @@ namespace GT
             filePath = $"file://{filePath}";
             Debug.Log($"정제된 path - {filePath}");
             return filePath;
+        }
+
+        // 경로 제거한 파일명 반환
+        public string GetFileName(string filePath)
+        {
+            return filePath.Split('/').Last();
         }
 
         // 해당 파일의 디렉토리 하위 파일들 탐색
@@ -162,6 +168,15 @@ namespace GT
 
             return cur_directory;
         }
+
+        // 인접된 파일 탐색 후 재생 (이전, 다음)
+        /*public List<string> SetFindNextPrevFile(List<string> fileList, string currFile, ViewMode viewMode)
+        {
+            foreach (var item in collection)
+            {
+
+            }
+        }*/
 
         private void OnGUI()
         {

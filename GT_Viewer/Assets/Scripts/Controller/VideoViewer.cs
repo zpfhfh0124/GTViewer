@@ -12,26 +12,40 @@ namespace GT
 {
     public class VideoViewer : MonoBehaviour
     {
+        // 동영상 렌더러
         VideoPlayer _videoPlayer;
-
-        [SerializeField] VideoPlayList _cs_videoPlayList;
-        FileDragAndDrop _cs_fileDragAndDrop;
-
+        RawImage _rawImage;
+        RectTransform _rawImgRectTransform;
+        RectTransform _canvasRectTransform;
+        [SerializeField] Canvas _canvas;
         [SerializeField] GameObject _videoBoard;
 
+        // 현재 스크린 사이즈 저장용
+        float _screenWidth;
+        float _screenHeight;
+
+        // 버튼
         [SerializeField] Button _btn_ImageViewer;
         [SerializeField] Button _btn_play;
         [SerializeField] Button _btn_playList;
 
+        // 오브젝트
         [SerializeField] GameObject _obj_img_play;
         [SerializeField] GameObject _obj_img_guide;
 
+        // 슬라이더
         [SerializeField] Slider _slider_time;
         [SerializeField] Slider _slider_volume;
 
+        // 텍스트
         [SerializeField] TextMeshProUGUI _text_lengthTime;
         [SerializeField] TextMeshProUGUI _text_currentTime;
+        [SerializeField] TextMeshProUGUI _text_fileName;
 
+        // 외부 클래스
+        FileDragAndDrop _cs_fileDragAndDrop;
+        [SerializeField] VideoPlayList _cs_videoPlayList;
+        
         void Start()
         {
             _btn_ImageViewer.onClick.AddListener(() =>
@@ -98,7 +112,7 @@ namespace GT
             }
 
             // 재생중일 경우 
-            if (_videoPlayer.isPlaying)
+            if (_videoPlayer != null && _videoPlayer.isPlaying)
             {
                 // 재생시간 계산
                 SetTime(_videoPlayer.length, _videoPlayer.time);
@@ -106,6 +120,13 @@ namespace GT
                 // 타임슬라이더 현재 타임라인으로 조정
                 float rate = (float)_videoPlayer.time / (float)_videoPlayer.length;
                 _slider_time.SetValueWithoutNotify(rate);
+            }
+
+            // 화면 사이즈가 조정되었을 경우 (크기 조절중에는 호출 안되도록)
+            if( !Input.GetMouseButton(0) && _canvasRectTransform != null &&
+                (_screenWidth != _canvasRectTransform.sizeDelta.x || _screenHeight != _canvasRectTransform.sizeDelta.y) )
+            {
+                ResizeVideo();
             }
         }
 
@@ -117,6 +138,7 @@ namespace GT
 
         void Init()
         {
+            _text_fileName.text = "동영상 파일을 드래그 앤 드롭";
             _obj_img_play.SetActive(false);
             _obj_img_guide.SetActive(true);
             _cs_videoPlayList.SetEnable(false);
@@ -143,6 +165,7 @@ namespace GT
                 return;
 
             _videoPlayer.url = MainController.Instance.GetLocalFileURL(filePath);
+            _text_fileName.text = MainController.Instance.GetFileName(_videoPlayer.url);
             _obj_img_guide.SetActive(false);
 
             _videoPlayer.Prepare();
@@ -152,6 +175,7 @@ namespace GT
         IEnumerator CoroutineWaitVideoPrepared()
         {
             yield return new WaitUntil(() => _videoPlayer.isPrepared);
+            SetVideoRenderer();
             ResizeVideo();
             _slider_volume.SetValueWithoutNotify(_videoPlayer.GetDirectAudioVolume(0));
             SetTime(_videoPlayer.length, _videoPlayer.time);
@@ -159,32 +183,40 @@ namespace GT
             SetPlayList();
         }
         
-        // 동영상 비율에 맞춰서 크기 조정 (빌드 앱에서만)
-        void ResizeVideo()
+        void SetVideoRenderer()
         {
-            int newWidth = (int)_videoPlayer.width;
-            int newHeight = (int)_videoPlayer.height;
-
-            _videoPlayer.targetTexture = new RenderTexture(newWidth, newHeight, 1);
-            RawImage rawImage = _videoBoard.GetComponent<RawImage>();
-            if(rawImage == null)
+            _videoPlayer.targetTexture = new RenderTexture((int)_videoPlayer.width, (int)_videoPlayer.height, 1);
+            _rawImage = _videoBoard.GetComponent<RawImage>();
+            if (_rawImage == null)
             {
                 Debug.LogError($"{_videoBoard.name}의 RawImage가 Null이다!");
             }
 
-            rawImage.texture = _videoPlayer.targetTexture;
-
-            RectTransform rectTransform = _videoBoard.GetComponent<RectTransform>();
-            if (rectTransform == null)
+            _rawImage.texture = _videoPlayer.targetTexture;
+            _rawImgRectTransform = _videoBoard.GetComponent<RectTransform>();
+            if (_rawImgRectTransform == null)
             {
                 Debug.LogError($"{_videoBoard.name}의 RectTransform Null이다!");
             }
 
-#if UNITY_STANDALONE && !UNITY_EDITOR
+            _canvasRectTransform = _canvas.GetComponent<RectTransform>();
+            if (_canvasRectTransform == null)
+            {
+                Debug.LogError($"{_canvas.name}의 RectTransform Null이다!");
+            }
+
+            _screenWidth = _canvasRectTransform.sizeDelta.x;
+            _screenHeight = _canvasRectTransform.sizeDelta.y;
+        }
+
+        // 동영상 비율에 맞춰서 크기 조정 (빌드 앱에서만)
+        void ResizeVideo()
+        {
+//#if UNITY_STANDALONE && !UNITY_EDITOR
             // 비율 맞추기
             // 현재 화면의 가로와 세로 길이
-            float screenWidth = Screen.width;
-            float screenHeight = Screen.height - 150; // 창 최대화하면 위 아래가 잘리기 때문에 조정
+            float screenWidth = _canvasRectTransform.sizeDelta.x;
+            float screenHeight = _canvasRectTransform.sizeDelta.y;/* - 150; // 창 최대화하면 위 아래가 잘리기 때문에 조정*/
             Debug.Log($"현재 화면 크기 : {screenWidth}*{screenHeight}");
 
             // 현재 동영상의 너비와 높이
@@ -192,27 +224,33 @@ namespace GT
             float videoHeight = _videoPlayer.height;
             Debug.Log($"동영상 크기 : {videoWidth}*{videoHeight}");
             
-            // 동영상 비율
-            float videoAspectRatio = videoWidth / videoHeight;
+            // 동영상 가로 기준 비율
+            float aspectWidthRatio = videoWidth / videoHeight;
+            // 동영상 세로 기준 비율
+            float aspectHeightRatio = videoHeight / videoWidth;
 
             // RawImage의 크기를 화면에 꽉 차도록 설정
             float rawImageWidth = screenWidth;
             float rawImageHeight = screenHeight;
 
-            // 비디오의 가로/세로 비율에 따라 RawImage의 크기 조정
-            if (videoAspectRatio > screenWidth / screenHeight)
+            // 가로가 긴 영상
+            if( videoWidth > videoHeight )
             {
-                // 비디오의 가로/세로 비율이 화면보다 더 가로 방향에 가까운 경우
-                rawImageHeight = screenWidth / videoAspectRatio;
+                rawImageHeight = aspectHeightRatio * screenWidth;
             }
+            // 세로가 긴 영상
             else
             {
-                // 비디오의 가로/세로 비율이 화면보다 더 세로 방향에 가까운 경우
-                rawImageWidth = screenHeight * videoAspectRatio;
+                rawImageWidth = aspectWidthRatio * screenHeight;
             }
+            
             // RawImage의 크기 설정
-            rectTransform.sizeDelta = new Vector2(rawImageWidth, rawImageHeight);
-#endif
+            _screenWidth = _canvasRectTransform.sizeDelta.x;
+            _screenHeight = _canvasRectTransform.sizeDelta.y;
+            _rawImgRectTransform.sizeDelta = new Vector2(rawImageWidth, rawImageHeight);
+            Debug.Log($"수정된 화면 크기 : {_screenWidth}*{_screenHeight}");
+            Debug.Log($"수정된 동영상 크기 : {_rawImgRectTransform.sizeDelta.x}*{_rawImgRectTransform.sizeDelta.y}");
+//#endif
         }
 
         void SetPlayList()
