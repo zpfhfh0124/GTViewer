@@ -122,6 +122,14 @@ namespace GT
             {
                 SetExplorationTimeline(10.0f);
             }
+            else if (Input.GetKeyDown(KeyCode.PageUp))
+            {
+                OnNextPrevVideo(true);
+            }
+            else if (Input.GetKeyDown(KeyCode.PageDown))
+            {
+                OnNextPrevVideo();
+            }
 
             // 재생중일 경우 
             if (_videoPlayer != null && _videoPlayer.isPlaying)
