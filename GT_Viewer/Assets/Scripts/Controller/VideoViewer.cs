@@ -28,6 +28,8 @@ namespace GT
         [SerializeField] Button _btn_ImageViewer;
         [SerializeField] Button _btn_play;
         [SerializeField] Button _btn_playList;
+        [SerializeField] Button _btn_prevVideo;
+        [SerializeField] Button _btn_nextVideo;
 
         // 오브젝트
         [SerializeField] GameObject _obj_img_play;
@@ -71,6 +73,16 @@ namespace GT
             _btn_playList.onClick.AddListener(() =>
             {
                 OnPlayList();
+            });
+
+            _btn_prevVideo.onClick.AddListener(() =>
+            {
+                OnNextPrevVideo(true);
+            });
+
+            _btn_nextVideo.onClick.AddListener(() =>
+            {
+                OnNextPrevVideo();
             });
 
             Init();
@@ -156,9 +168,12 @@ namespace GT
                 Debug.LogError($"현재 {gameObject.scene}에 FileDragAndDrop 오브젝트가 없다.");
                 return;
             }
+
+            // 동영상 재생 완료 이벤트 등록
+            _videoPlayer.loopPointReached += (e) => { OnNextPrevVideo(); };
         }
 
-        void SetVideo(string filePath, bool isLeft)
+        void SetVideo(string filePath, bool isLeft = false)
         {
             // 파일이 동영상 파일인지 검사(avi, mp4, wav, flv...)
             if (MainController.Instance.CheckFileExtension(ViewMode.VIDEO, filePath) == false) 
@@ -270,6 +285,14 @@ namespace GT
             _cs_videoPlayList.SetEnable(true);
 
             //_cs_videoPlayList.SetVideoPlayList()
+        }
+
+        void OnNextPrevVideo(bool isPrev = false)
+        {
+            string curFilePath = MainController.Instance.SetFileProtocolFileURL(_videoPlayer.url, true);
+            string findFile = MainController.Instance.FindNextPrevFile(_cs_videoPlayList.GetVideoPlayList(), curFilePath, ViewMode.VIDEO, isPrev);
+            if (_videoPlayer.isPlaying) SetPlayPause();
+            SetVideo(findFile);
         }
 
         /// <summary>

@@ -38,6 +38,11 @@ namespace GT
             _playList = fileList;
         }
 
+        public List<string> GetVideoPlayList()
+        {
+            return _playList;
+        }
+
         void ShowPlayList()
         {
             foreach (var item in _playList)

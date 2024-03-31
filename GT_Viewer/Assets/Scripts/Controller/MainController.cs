@@ -132,13 +132,27 @@ namespace GT
             }
         }
 
-        public string GetLocalFileURL(string filePath)
+        public string SetFileProtocolFileURL(string filePath, bool isExcludeProtocol = false)
+        {
+            if (isExcludeProtocol == false)
+            {
+                filePath = $"file://{filePath}";
+            }
+            else
+            {
+                filePath = filePath.Replace("file://", "");
+            }
+
+            return filePath;
+        }
+
+        public string GetLocalFileURL(string filePath, ViewMode viewMode = ViewMode.VIDEO)
         {
             // VideoPlayer URL에 세팅 -> url형식 맞춰주기
             // file:// 문자열 앞에 붙혀야함 \ -> / 문자로 교체
             Debug.Log($"{filePath}");
             filePath = filePath.Replace('\\', '/');
-            filePath = $"file://{filePath}";
+            if (viewMode == ViewMode.VIDEO && !filePath.Contains("file://")) filePath = SetFileProtocolFileURL(filePath);
             Debug.Log($"정제된 path - {filePath}");
             return filePath;
         }
@@ -153,10 +167,15 @@ namespace GT
         public List<string> GetDirectoryFileList(string filePath, ViewMode viewMode)
         {
             // file:// 프로토콜 제거
-            filePath = filePath.Replace("file://", "");
+            filePath = SetFileProtocolFileURL(filePath, true);
             filePath = filePath.Replace(filePath.Split('/').Last(), "");
             string[] cur_Directory_arr = Directory.GetFiles(filePath);
-            List<string> cur_directory = cur_Directory_arr.ToList<string>();
+            List<string> cur_directory = cur_Directory_arr.ToList<string>();            
+            if(cur_directory == null || cur_directory.Count <= 0)
+            {
+                Debug.LogWarning($"현재 파일{filePath} 경로에 {viewMode}파일이 없다");
+                return cur_directory;
+            }
 
             foreach (var file in cur_directory)
             {
@@ -170,13 +189,43 @@ namespace GT
         }
 
         // 인접된 파일 탐색 후 재생 (이전, 다음)
-        /*public List<string> SetFindNextPrevFile(List<string> fileList, string currFile, ViewMode viewMode)
+        public string FindNextPrevFile(List<string> fileList, string currFile, ViewMode viewMode, bool isPrev = false)
         {
-            foreach (var item in collection)
-            {
+            if (isPrev) fileList = fileList.Reverse<string>().ToList();
 
+            string findFile = string.Empty;
+            
+            if (!fileList.Exists(x => x == currFile)) 
+            {
+                Debug.LogWarning($"현재 찾으려고 하는 파일이 파일 리스트에 없다!");
+                return string.Empty;
             }
-        }*/
+
+            bool isFind = false;
+            foreach (var file in fileList)
+            {
+                if(isFind)
+                {
+                    findFile = file;
+                    break;
+                }
+
+                if (file == currFile) 
+                {
+                    isFind = true;
+                }
+            }
+
+            if(viewMode == ViewMode.VIDEO)
+            {
+                findFile = SetFileProtocolFileURL(findFile);
+            }
+
+            string log = isPrev ? $"이전 파일 {findFile}을 찾았습니다." : $"다음 파일 {findFile}을 찾았습니다.";
+            Debug.Log(log);
+
+            return findFile;
+        }
 
         private void OnGUI()
         {
