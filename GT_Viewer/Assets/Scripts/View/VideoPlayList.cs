@@ -13,7 +13,7 @@ namespace GT
 
         [SerializeField] ScrollRect _scrollRect;
 
-        List<string> _playList = new List<string>();
+        static List<string> _playList = new List<string>();
 
         private void Start()
         {

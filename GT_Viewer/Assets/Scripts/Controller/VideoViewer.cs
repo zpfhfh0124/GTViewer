@@ -298,7 +298,8 @@ namespace GT
         void OnNextPrevVideo(bool isPrev = false)
         {
             string curFilePath = MainController.Instance.SetFileProtocolFileURL(_videoPlayer.url, true);
-            string findFile = MainController.Instance.FindNextPrevFile(_cs_videoPlayList.GetVideoPlayList(), curFilePath, ViewMode.VIDEO, isPrev);
+            List<string> curFileList = _cs_videoPlayList.GetVideoPlayList();
+            string findFile = MainController.Instance.FindNextPrevFile(curFileList, curFilePath, ViewMode.VIDEO, isPrev);
             if (_videoPlayer.isPlaying) SetPlayPause();
             SetVideo(findFile);
         }

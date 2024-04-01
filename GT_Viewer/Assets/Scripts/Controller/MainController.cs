@@ -105,7 +105,7 @@ namespace GT
         public bool CheckFileExtension(ViewMode viewMode, string filePath)
         {
             List<string> list_img_extension = new List<string> { "jpg", "jpeg", "png", "gif" };
-            List<string> list_video_extension = new List<string> { "avi", "mp4", "mov", "wmv", "flv", "mkv" };
+            List<string> list_video_extension = new List<string> { "avi", "mp4", "mov", "wmv", "flv", "mkv", "m4v" };
             List<string> list_extension = new List<string>();
             switch (viewMode)
             {
@@ -177,15 +177,16 @@ namespace GT
                 return cur_directory;
             }
 
+            List<string> video_list = new List<string>();
             foreach (var file in cur_directory)
             {
                 bool isExtension = CheckFileExtension(viewMode, file);
                 //Debug.Log($"현재 경로 탐색 파일 : {file} | {viewMode} : {isExtension}");
-
-                if (isExtension == false) cur_directory.Remove(file); 
+                
+                if (isExtension == true) video_list.Add(file); 
             }
 
-            return cur_directory;
+            return video_list;
         }
 
         // 인접된 파일 탐색 후 재생 (이전, 다음)
