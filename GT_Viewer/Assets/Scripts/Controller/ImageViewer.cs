@@ -21,6 +21,14 @@ namespace GT
         [SerializeField] Button _btn_reset;
         [SerializeField] Button _btn_quit;
         [SerializeField] Button _btn_video;
+        [SerializeField] Button _btn_leftPrev;
+        [SerializeField] Button _btn_leftNext;
+        [SerializeField] Button _btn_rightPrev;
+        [SerializeField] Button _btn_rightNext;
+
+        // 현재 로드된 이미지 파일 경로
+        string _imgFile_left;
+        string _imgFile_right;
 
         // 현재 로드된 이미지의 디렉토리 하위 이미지 파일 리스트
         List<string> _imgFiles_left = new List<string>();
@@ -37,6 +45,26 @@ namespace GT
             _btn_quit.onClick.AddListener(() =>
             {
                 QuitApp();
+            });
+
+            _btn_leftPrev.onClick.AddListener(() =>
+            {
+                OnNextPrevImg(true, true);
+            });
+
+            _btn_leftNext.onClick.AddListener(() =>
+            {
+                OnNextPrevImg(false, true);
+            });
+
+            _btn_rightPrev.onClick.AddListener(() =>
+            {
+                OnNextPrevImg(true, false);
+            });
+
+            _btn_rightNext.onClick.AddListener(() =>
+            {
+                OnNextPrevImg(false, false);
             });
 
             _btn_video.onClick.AddListener(() =>
@@ -80,7 +108,19 @@ namespace GT
             if (MainController.Instance.CheckFileExtension(ViewMode.IMAGE, imgFilePath) == false)
                 return;
 
-            Image image = isLeft ? _img_left : _img_right;
+            Image image;
+            if (isLeft)
+            {
+                image = _img_left;
+                _imgFile_left = imgFilePath;
+            }
+            else
+            {
+                image = _img_right;
+                _imgFile_right = imgFilePath;
+            }
+
+            SetImgList(isLeft);
 
             // 리소스 탐색 후 텍스쳐로 변환해서 저장
             byte[] byteTexture = File.ReadAllBytes(imgFilePath);
@@ -95,6 +135,29 @@ namespace GT
                 Sprite sprite = Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f));
                 image.sprite = sprite;
             }
+        }
+
+        void SetImgList( bool isLeft )
+        {
+            List<string> imgFiles = new List<string>();
+            if (isLeft)
+            {
+                imgFiles = MainController.Instance.GetDirectoryFileList(_imgFile_left, ViewMode.IMAGE);
+                _imgFiles_left = imgFiles;
+            }
+            else
+            {
+                imgFiles = MainController.Instance.GetDirectoryFileList(_imgFile_right, ViewMode.IMAGE);
+                _imgFiles_right = imgFiles;
+            }
+        }
+
+        void OnNextPrevImg(bool isPrev, bool isLeft)
+        {
+            List<string> curFileList = isLeft ? _imgFiles_left : _imgFiles_right;
+            string curFilePath = isLeft ? _imgFile_left : _imgFile_right;
+            string findFile = MainController.Instance.FindNextPrevFile(curFileList, curFilePath, ViewMode.IMAGE, isPrev);
+            SetImg(findFile, isLeft);
         }
 
         void QuitApp()

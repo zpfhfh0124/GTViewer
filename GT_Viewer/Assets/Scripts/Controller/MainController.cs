@@ -32,7 +32,7 @@ namespace GT
         private void Awake()
         {
             Instance = this;
-            SetMode(ViewMode.VIDEO);
+            SetMode(ViewMode.IMAGE);
         }
 
         private void OnEnable()
@@ -166,9 +166,18 @@ namespace GT
         // 해당 파일의 디렉토리 하위 파일들 탐색
         public List<string> GetDirectoryFileList(string filePath, ViewMode viewMode)
         {
-            // file:// 프로토콜 제거
-            filePath = SetFileProtocolFileURL(filePath, true);
-            filePath = filePath.Replace(filePath.Split('/').Last(), "");
+            // 동영상일 경우 file:// 프로토콜 제거 
+            if(filePath.Contains("file://")) filePath = SetFileProtocolFileURL(filePath, true);
+
+            if (filePath.Contains('/'))
+            {
+                filePath = filePath.Replace(filePath.Split('/').Last(), "");
+            }
+            else
+            {
+                filePath = filePath.Replace(filePath.Split('\\').Last(), "");
+            }
+
             string[] cur_Directory_arr = Directory.GetFiles(filePath);
             List<string> cur_directory = cur_Directory_arr.ToList<string>();            
             if(cur_directory == null || cur_directory.Count <= 0)
@@ -177,16 +186,16 @@ namespace GT
                 return cur_directory;
             }
 
-            List<string> video_list = new List<string>();
+            List<string> filt_list = new List<string>();
             foreach (var file in cur_directory)
             {
                 bool isExtension = CheckFileExtension(viewMode, file);
                 //Debug.Log($"현재 경로 탐색 파일 : {file} | {viewMode} : {isExtension}");
                 
-                if (isExtension == true) video_list.Add(file); 
+                if (isExtension == true) filt_list.Add(file); 
             }
 
-            return video_list;
+            return filt_list;
         }
 
         // 인접된 파일 탐색 후 재생 (이전, 다음)
