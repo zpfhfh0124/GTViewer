@@ -30,6 +30,7 @@ namespace GT
         [SerializeField] Button _btn_playList;
         [SerializeField] Button _btn_prevVideo;
         [SerializeField] Button _btn_nextVideo;
+        [SerializeField] Button _btn_InputURL;
 
         // 오브젝트
         [SerializeField] GameObject _obj_img_play;
@@ -43,6 +44,7 @@ namespace GT
         [SerializeField] TextMeshProUGUI _text_lengthTime;
         [SerializeField] TextMeshProUGUI _text_currentTime;
         [SerializeField] TextMeshProUGUI _text_fileName;
+        [SerializeField] TextMeshProUGUI _text_inputURL;
 
         // 외부 클래스
         FileDragAndDrop _cs_fileDragAndDrop;
@@ -83,6 +85,11 @@ namespace GT
             _btn_nextVideo.onClick.AddListener(() =>
             {
                 OnNextPrevVideo();
+            });
+
+            _btn_InputURL.onClick.AddListener(() =>
+            {
+
             });
 
             Init();

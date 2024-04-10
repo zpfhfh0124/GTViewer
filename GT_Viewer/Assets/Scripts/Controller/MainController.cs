@@ -32,7 +32,7 @@ namespace GT
         private void Awake()
         {
             Instance = this;
-            SetMode(ViewMode.IMAGE);
+            SetMode(ViewMode.VIDEO);
         }
 
         private void OnEnable()
