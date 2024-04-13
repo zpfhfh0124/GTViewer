@@ -10,7 +10,7 @@ using UnityEngine.Video;
 
 namespace GT
 {
-    public class VideoViewer : MonoBehaviour
+    public class VideoViewer : SingletonMB<VideoViewer>
     {
         // 동영상 렌더러
         VideoPlayer _videoPlayer;
@@ -19,6 +19,7 @@ namespace GT
         RectTransform _canvasRectTransform;
         [SerializeField] Canvas _canvas;
         [SerializeField] GameObject _videoBoard;
+        Texture2D _videoTexture; // 웹에서 받은 비디오 텍스쳐 저장용
 
         // 현재 스크린 사이즈 저장용
         float _screenWidth;
@@ -30,7 +31,7 @@ namespace GT
         [SerializeField] Button _btn_playList;
         [SerializeField] Button _btn_prevVideo;
         [SerializeField] Button _btn_nextVideo;
-        [SerializeField] Button _btn_InputURL;
+        [SerializeField] Button _btn_URL;
 
         // 오브젝트
         [SerializeField] GameObject _obj_img_play;
@@ -44,11 +45,14 @@ namespace GT
         [SerializeField] TextMeshProUGUI _text_lengthTime;
         [SerializeField] TextMeshProUGUI _text_currentTime;
         [SerializeField] TextMeshProUGUI _text_fileName;
-        [SerializeField] TextMeshProUGUI _text_inputURL;
 
         // 외부 클래스
         FileDragAndDrop _cs_fileDragAndDrop;
         [SerializeField] VideoPlayList _cs_videoPlayList;
+        [SerializeField] VideoUrlSetting _cs_videoUrlSettings;
+
+        // URL 로컬 저장 디렉토리
+        string _downloadPath;
         
         void Start()
         {
@@ -87,9 +91,9 @@ namespace GT
                 OnNextPrevVideo();
             });
 
-            _btn_InputURL.onClick.AddListener(() =>
+            _btn_URL.onClick.AddListener(() =>
             {
-
+                OnUrlSettings();
             });
 
             Init();
@@ -169,6 +173,7 @@ namespace GT
             _obj_img_play.SetActive(false);
             _obj_img_guide.SetActive(true);
             _cs_videoPlayList.SetEnable(false);
+            _cs_videoUrlSettings.gameObject.SetActive(false);
 
             _videoPlayer = GetComponent<VideoPlayer>();
             if(_videoPlayer == null)
@@ -188,16 +193,16 @@ namespace GT
             _videoPlayer.loopPointReached += (e) => { OnNextPrevVideo(); };
         }
 
-        void SetVideo(string filePath, bool isLeft = false)
+        public void SetVideo(string filePath, bool isLeft = false)
         {
             // 파일이 동영상 파일인지 검사(avi, mp4, wav, flv...)
             if (MainController.Instance.CheckFileExtension(ViewMode.VIDEO, filePath) == false) 
                 return;
 
+            _videoTexture = null;
             _videoPlayer.url = MainController.Instance.GetLocalFileURL(filePath);
             _text_fileName.text = MainController.Instance.GetFileName(_videoPlayer.url);
             _obj_img_guide.SetActive(false);
-
             _videoPlayer.Prepare();
             StartCoroutine(CoroutineWaitVideoPrepared());
         }
@@ -205,6 +210,11 @@ namespace GT
         IEnumerator CoroutineWaitVideoPrepared()
         {
             yield return new WaitUntil(() => _videoPlayer.isPrepared);
+            InitPlayVideo();
+        }
+
+        void InitPlayVideo()
+        {
             SetVideoRenderer();
             ResizeVideo();
             _slider_volume.SetValueWithoutNotify(_videoPlayer.GetDirectAudioVolume(0));
@@ -222,7 +232,16 @@ namespace GT
                 Debug.LogError($"{_videoBoard.name}의 RawImage가 Null이다!");
             }
 
-            _rawImage.texture = _videoPlayer.targetTexture;
+            // Texture로 재생할 경우
+            if (_videoTexture != null) 
+            {
+                _rawImage.texture = _videoTexture;
+            }
+            else
+            {
+                _rawImage.texture = _videoPlayer.targetTexture;
+            }
+
             _rawImgRectTransform = _videoBoard.GetComponent<RectTransform>();
             if (_rawImgRectTransform == null)
             {
@@ -309,6 +328,11 @@ namespace GT
             string findFile = MainController.Instance.FindNextPrevFile(curFileList, curFilePath, ViewMode.VIDEO, isPrev);
             if (_videoPlayer.isPlaying) SetPlayPause();
             SetVideo(findFile);
+        }
+
+        void OnUrlSettings()
+        {
+            _cs_videoUrlSettings.gameObject.SetActive(true);
         }
 
         /// <summary>

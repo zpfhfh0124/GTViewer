@@ -13,14 +13,10 @@ namespace GT
         VIDEO
     }
 
-    public class MainController : MonoBehaviour
+    public class MainController : SingletonMB<MainController>
     {
-        static public MainController Instance { get; private set; }
-
         [SerializeField] ImageViewer _imageViewer;
         [SerializeField] VideoViewer _videoPlayer;
-
-        static List<string> _dontDestroyObjectNames = new List<string>();
 
         // GUI Log 표시
         static bool _useLog = false;
@@ -31,7 +27,6 @@ namespace GT
 
         private void Awake()
         {
-            Instance = this;
             SetMode(ViewMode.VIDEO);
         }
 
