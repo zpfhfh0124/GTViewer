@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System;
+using System.Text.RegularExpressions;
 
 namespace GT
 {
@@ -53,5 +54,6 @@ namespace GT
 
             WebRequestManager.Instance.WebRequestGet(url, localPath, WebRequestGetCallback);
         }
+
     }
 }

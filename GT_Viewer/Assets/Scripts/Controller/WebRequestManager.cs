@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using UnityEngine.Networking;
 using System;
+using System.Text.RegularExpressions;
 
 namespace GT
 {
@@ -36,19 +37,33 @@ namespace GT
 
             yield return request.SendWebRequest();
 
-            if ( request.result == UnityWebRequest.Result.ConnectionError ||
-                 request.result == UnityWebRequest.Result.ProtocolError )
+            if ( request.result == UnityWebRequest.Result.Success )
             {
-                Debug.LogError($"다운로드 실패 : {url} \n {request.error}");
+                File.WriteAllBytes(_createFilePath, request.downloadHandler.data);
+
+                yield return null;
+                Debug.Log($"다운로드 성공 : {url} \n {request.result} \n {_createFilePath}");
+
+                callback(url);
             }
             else
             {
-                File.WriteAllBytes(_createFilePath, request.downloadHandler.data);
-                Debug.Log($"다운로드 성공 : {url} \n {request.result} \n {_createFilePath}");
+                Debug.LogError($"다운로드 실패 : {url} \n {request.error}");
+            }
+        }
 
-                yield return null;
-
-                callback(url);
+        string ExtractVideoURL(string html)
+        {
+            // 동영상 태그에서 소스(src) 속성을 찾아 동영상 URL 추출
+            Regex regex = new Regex(@"<video.*?src=[""']([^""']+)[""'].*?>");
+            Match match = regex.Match(html);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+            else
+            {
+                return null;
             }
         }
     }
