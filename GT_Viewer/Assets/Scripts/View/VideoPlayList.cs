@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Gpm.Ui;
 
 namespace GT
 {
@@ -9,9 +10,8 @@ namespace GT
     {
         [SerializeField] Button _btn_loadFiles;
         [SerializeField] Button _btn_close;
-        [SerializeField] GameObject _prefab_playListItem;
 
-        [SerializeField] ScrollRect _scrollRect;
+        [SerializeField] InfiniteScroll _infiniteScroll;
 
         static List<string> _playList = new List<string>();
 
@@ -48,6 +48,20 @@ namespace GT
             foreach (var item in _playList)
             {
                 Debug.Log($"SetPlayList 현재 경로 - 파일 {item}");
+            }
+
+            SetVideoPlayListData();
+        }
+
+        public void SetVideoPlayListData()
+        {
+            foreach (var item in _playList)
+            {
+                VideoPlayListItemData data = new VideoPlayListItemData();
+                data.fileFullPath = item;
+                data.fileName = MainController.Instance.GetFileName(item);
+
+                _infiniteScroll.InsertData(data);
             }
         }
     }

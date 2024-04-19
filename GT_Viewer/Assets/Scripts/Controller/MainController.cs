@@ -185,7 +185,7 @@ namespace GT
             foreach (var file in cur_directory)
             {
                 bool isExtension = CheckFileExtension(viewMode, file);
-                //Debug.Log($"현재 경로 탐색 파일 : {file} | {viewMode} : {isExtension}");
+                Debug.Log($"현재 경로 탐색 파일 : {file} | {viewMode} : {isExtension}");
                 
                 if (isExtension == true) filt_list.Add(file); 
             }
