@@ -13,9 +13,17 @@ namespace GT
     {
         [SerializeField] GameObject _imageBoard;
 
+        // UGUI Canvas
+        [SerializeField] Canvas _canvas;
+        RectTransform _canvasRectTransform;
+
         // GUI 이미지 렌더러
         [SerializeField] Image _img_left;
         [SerializeField] Image _img_right;
+
+        // 현재 스크린 사이즈 저장용
+        float _screenWidth;
+        float _screenHeight;
 
         // 버튼
         [SerializeField] Button _btn_reset;
@@ -71,6 +79,18 @@ namespace GT
             {
                 MainController.Instance.SetMode(ViewMode.VIDEO);
             });
+
+            InitCanvas();
+        }
+
+        private void Update()
+        {
+            // 화면 사이즈가 조정되었을 경우 (크기 조절중에는 호출 안되도록)
+            if (!Input.GetMouseButton(0) && _canvasRectTransform != null &&
+                (_screenWidth != _canvasRectTransform.sizeDelta.x || _screenHeight != _canvasRectTransform.sizeDelta.y))
+            {
+                ResizeScreen();
+            }
         }
 
         private void OnEnable()
@@ -135,6 +155,22 @@ namespace GT
                 Sprite sprite = Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f));
                 image.sprite = sprite;
             }
+        }
+
+        void InitCanvas()
+        {
+            _canvasRectTransform = _canvas.GetComponent<RectTransform>();
+        }
+
+        void ResizeScreen()
+        {
+            // 비율 맞추기
+            // 현재 화면의 가로와 세로 길이
+            float screenWidth = _canvasRectTransform.sizeDelta.x;
+            float screenHeight = _canvasRectTransform.sizeDelta.y;/* - 150; // 창 최대화하면 위 아래가 잘리기 때문에 조정*/
+            Debug.Log($"현재 화면 크기 : {screenWidth}*{screenHeight}");
+
+            // 이미지 좌/우 조정   
         }
 
         void SetImgList( bool isLeft )
