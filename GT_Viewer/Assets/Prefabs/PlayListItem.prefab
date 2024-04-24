@@ -69,8 +69,8 @@ MonoBehaviour:
   m_text: "\uD30C\uC77C\uC774\uB984\uCD5C\uB300\uC5F4\uB450\uAE00\uC790\uAE4C\uC9C0
     \uD30C\uC77C\uC774\uB984\uCD5C\uB300\uC5F4\uB450\uAE00\uC790\uAE4C\uC9C0 0"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0985b2180ace91749a12232683a5694f, type: 2}
-  m_sharedMaterial: {fileID: 6722506497892551543, guid: 0985b2180ace91749a12232683a5694f, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: cbf3c0bb45495f44ea11612f9e57ef1e, type: 2}
+  m_sharedMaterial: {fileID: -2131806350406970798, guid: cbf3c0bb45495f44ea11612f9e57ef1e, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
