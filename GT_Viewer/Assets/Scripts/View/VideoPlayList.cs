@@ -55,6 +55,8 @@ namespace GT
 
         public void SetVideoPlayListData()
         {
+            _infiniteScroll.ClearData();
+
             foreach (var item in _playList)
             {
                 VideoPlayListItemData data = new VideoPlayListItemData();
